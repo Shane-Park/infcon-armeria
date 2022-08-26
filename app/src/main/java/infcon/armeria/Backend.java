@@ -13,7 +13,7 @@ public final class Backend {
         server = Server.builder()
                 .http(port)
                 .service("/foo", ((ctx, req) -> {
-                    HttpResponse response = HttpResponse.of("response from/: " + name);
+                    HttpResponse response = HttpResponse.of("response from: " + name);
                     return HttpResponse.delayed(response, Duration.ofSeconds(3));
                 })).build();
     }
