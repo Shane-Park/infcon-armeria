@@ -14,7 +14,7 @@ public final class Main {
         final WebClient fooClient = WebClient.of("http://127.0.0.1:9000");
 
         final Backend bar = Backend.of("bar", 9001);
-        foo.start();
+        bar.start();
         final WebClient barClient = WebClient.of("http://127.0.0.1:9001");
 
         ServerBuilder serverBuilder = Server.builder();
