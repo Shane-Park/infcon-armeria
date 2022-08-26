@@ -10,7 +10,7 @@ import java.util.concurrent.CompletableFuture;
 class BackendTest {
 
     @Test
-    void backend() {
+    void backend() throws InterruptedException {
         final Backend foo = Backend.of("foo", 9000);
         foo.start();
 
@@ -27,11 +27,17 @@ class BackendTest {
         CompletableFuture<AggregatedHttpResponse> future = httpResponse.aggregate();
         // 지금 이 future는 body를 가지고 있지 않음. 또 다른 껍데기. 껍데기에서 껍데기를 만든 상태.
 
-        // 비동기서버에서는 join을 절대로 사용 하면 안됨.
-        AggregatedHttpResponse aggregatedHttpResponse = future.join();
-        String content = aggregatedHttpResponse.contentUtf8();
-        System.err.println(content);
+        // join 이 아닌 callback 을 사용 해야 한다.
+        // future에 callback을 등록 해서 3초 후에 응답이 발생하면 알맹이가 채워지고, 오리지널 클라이언트에게 요청
+        future.thenAccept(aggregatedHttpResponse -> {
+            // 이벤트 루프. 요청을 받아서 futre 껍데기 에다가 알맹이를 넣어주는 쓰레드
+            System.err.println("In callback. Thread name: " + Thread.currentThread().getName());
+            sendBackToTheOriginalClient(aggregatedHttpResponse);
+        });
 
+        Thread.sleep(Long.MAX_VALUE);
+    }
 
+    private void sendBackToTheOriginalClient(AggregatedHttpResponse aggregatedHttpResponse) {
     }
 }
