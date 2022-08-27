@@ -9,6 +9,11 @@ import java.util.concurrent.CompletableFuture;
 public final class Main {
 
     public static void main(String[] args) {
+
+        final AuthServer authServer = AuthServer.of(8999);
+        authServer.start();
+        WebClient authClient = WebClient.of("http://127.0.0.1:8999");
+
         final Backend foo = Backend.of("foo", 9000);
         foo.start();
         final WebClient fooClient = WebClient.of("http://127.0.0.1:9000");
@@ -19,6 +24,7 @@ public final class Main {
 
         ServerBuilder serverBuilder = Server.builder();
         Server server = serverBuilder.http(8080)
+                .decorator(new AuthDecorator(authClient))
                 .service("/infcon", new MyService(fooClient, barClient))
                 .build();
 
