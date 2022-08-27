@@ -6,6 +6,8 @@ import com.linecorp.armeria.common.HttpResponse;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 class BackendTest {
 
@@ -39,5 +41,24 @@ class BackendTest {
     }
 
     private void sendBackToTheOriginalClient(AggregatedHttpResponse aggregatedHttpResponse) {
+        return;
+    }
+
+    // Run main() before run this test.
+    @Test
+    void multipleRequests() throws InterruptedException {
+        final int TARGET = 100_000;
+
+        final long start = System.nanoTime();
+        final CountDownLatch latch = new CountDownLatch(10000);
+        for (int i = 0; i < TARGET; i++) {
+            final WebClient webClient = WebClient.of("http://127.0.0.1:8080");
+            webClient.get("/infcon").aggregate().handle((aggregatedHttpResponse, throwable) -> {
+                latch.countDown();
+                return null;
+            });
+        }
+        latch.await();
+        System.err.println("Elapsed time: " + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start) + " ms");
     }
 }
